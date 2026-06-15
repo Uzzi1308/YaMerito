@@ -10,7 +10,8 @@ const seed = {
   ideas: [],
   water: { count: 0, date: getDateKey() },
   timer: { minutes: 25, remaining: 25 * 60, running: false, completed: 0, completedDate: getDateKey(), history: {} },
-  reports: { dailyShown: "", weeklyShown: "" }
+  reports: { dailyShown: "", weeklyShown: "" },
+  profile: { name: "", avatar: "", note: "" }
 };
 
 const storeKey = "atelier-marketing-dashboard-v2";
@@ -58,9 +59,21 @@ const dogCaption = document.querySelector("#dogCaption");
 const authForm = document.querySelector("#authForm");
 const authEmail = document.querySelector("#authEmail");
 const authPassword = document.querySelector("#authPassword");
-const authUser = document.querySelector("#authUser");
+const accountButton = document.querySelector("#accountButton");
+const accountAvatar = document.querySelector("#accountAvatar");
+const accountIcon = document.querySelector("#accountIcon");
+const accountInitial = document.querySelector("#accountInitial");
+const authModal = document.querySelector("#authModal");
+const authGuest = document.querySelector("#authGuest");
+const authProfile = document.querySelector("#authProfile");
 const authUserEmail = document.querySelector("#authUserEmail");
 const syncStatus = document.querySelector("#syncStatus");
+const profileForm = document.querySelector("#profileForm");
+const profileName = document.querySelector("#profileName");
+const profileAvatar = document.querySelector("#profileAvatar");
+const profileNote = document.querySelector("#profileNote");
+const profileAvatarPreview = document.querySelector("#profileAvatarPreview");
+const profileInitial = document.querySelector("#profileInitial");
 
 const mascotSprites = {
   dog: "./assets/mascots/dog.png",
@@ -93,7 +106,8 @@ function normalizeState(savedState) {
     ...savedState,
     timer,
     water: normalizeWater(savedState.water),
-    reports: { ...seed.reports, ...(savedState.reports || {}) }
+    reports: { ...seed.reports, ...(savedState.reports || {}) },
+    profile: { ...seed.profile, ...(savedState.profile || {}) }
   };
 }
 
@@ -126,6 +140,8 @@ function render() {
   renderTimer();
   renderStats();
   renderMascot();
+  renderAccountButton();
+  renderProfileFields();
   saveState();
 }
 
@@ -212,10 +228,65 @@ async function initCloudSync() {
 
 function renderAuthState() {
   const signedIn = Boolean(currentUser);
-  authForm.hidden = signedIn;
-  authUser.hidden = !signedIn;
+  authGuest.hidden = signedIn;
+  authProfile.hidden = !signedIn;
   authUserEmail.textContent = currentUser?.email || "";
   setSyncStatus(signedIn ? "Conectando..." : "Guardado local");
+  renderAccountButton();
+  renderProfileFields(true);
+}
+
+function openAuthModal() {
+  authModal.classList.add("is-open");
+  authModal.setAttribute("aria-hidden", "false");
+  renderAuthState();
+}
+
+function closeAuthModal() {
+  authModal.classList.remove("is-open");
+  authModal.setAttribute("aria-hidden", "true");
+}
+
+function getProfileInitial() {
+  const source = state.profile.name || currentUser?.email || "YaMerito";
+  return source.trim().charAt(0).toUpperCase();
+}
+
+function renderAccountButton() {
+  const avatar = state.profile.avatar?.trim();
+  accountInitial.textContent = getProfileInitial();
+  if (avatar) {
+    accountAvatar.src = avatar;
+    accountAvatar.hidden = false;
+    accountIcon.hidden = true;
+    accountInitial.hidden = true;
+  } else if (currentUser) {
+    accountAvatar.hidden = true;
+    accountIcon.hidden = true;
+    accountInitial.hidden = false;
+  } else {
+    accountAvatar.hidden = true;
+    accountIcon.hidden = false;
+    accountInitial.hidden = true;
+  }
+}
+
+function renderProfileFields(force = false) {
+  if (!force && profileForm.contains(document.activeElement)) return;
+  profileName.value = state.profile.name || "";
+  profileAvatar.value = state.profile.avatar || "";
+  profileNote.value = state.profile.note || "";
+  profileInitial.textContent = getProfileInitial();
+
+  const avatar = state.profile.avatar?.trim();
+  if (avatar) {
+    profileAvatarPreview.src = avatar;
+    profileAvatarPreview.hidden = false;
+    profileInitial.hidden = true;
+  } else {
+    profileAvatarPreview.hidden = true;
+    profileInitial.hidden = false;
+  }
 }
 
 function visibleTasks() {
@@ -559,6 +630,30 @@ document.querySelector("#signUp").addEventListener("click", async () => {
 document.querySelector("#signOut").addEventListener("click", async () => {
   if (!supabaseClient) return;
   await supabaseClient.auth.signOut();
+});
+
+accountButton.addEventListener("click", openAuthModal);
+
+document.querySelector("#closeAuthModal").addEventListener("click", closeAuthModal);
+
+authModal.addEventListener("click", (event) => {
+  if (event.target === authModal) closeAuthModal();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && authModal.classList.contains("is-open")) closeAuthModal();
+});
+
+profileForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  state.profile = {
+    name: profileName.value.trim(),
+    avatar: profileAvatar.value.trim(),
+    note: profileNote.value.trim()
+  };
+  render();
+  renderProfileFields(true);
+  setSyncStatus("Perfil guardado");
 });
 
 chips.forEach((chip) => {
