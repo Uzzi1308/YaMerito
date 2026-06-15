@@ -16,11 +16,19 @@ const seed = {
 const storeKey = "atelier-marketing-dashboard-v2";
 const themeKey = "atelier-marketing-theme";
 const mascotKey = "atelier-marketing-mascot";
+const cloudTable = "dashboard_states";
+const supabaseUrl = "https://ljwwbnjgdmczdhckcztf.supabase.co";
+const supabaseAnonKey = "REEMPLAZA_DESPUES_DE_ROTAR_TU_ANON_KEY";
 let state = loadState();
 let activeFilter = "Todas";
 let activeView = "flow";
 let draggedId = null;
 let timerInterval = null;
+let supabaseClient = null;
+let currentUser = null;
+let cloudReady = false;
+let cloudSaveTimer = null;
+let loadingCloudState = false;
 
 const laneWrap = document.querySelector("#lanes");
 const template = document.querySelector("#taskTemplate");
@@ -47,6 +55,12 @@ const dogGift = document.querySelector("#dogGift");
 const dogCard = document.querySelector("#dogCard");
 const dogImage = document.querySelector("#dogImage");
 const dogCaption = document.querySelector("#dogCaption");
+const authForm = document.querySelector("#authForm");
+const authEmail = document.querySelector("#authEmail");
+const authPassword = document.querySelector("#authPassword");
+const authUser = document.querySelector("#authUser");
+const authUserEmail = document.querySelector("#authUserEmail");
+const syncStatus = document.querySelector("#syncStatus");
 
 const mascotSprites = {
   dog: "./assets/mascots/dog.png",
@@ -94,6 +108,7 @@ function normalizeWater(savedWater = {}) {
 
 function saveState() {
   localStorage.setItem(storeKey, JSON.stringify(state));
+  queueCloudSave();
 }
 
 function applyTheme(theme) {
@@ -112,6 +127,95 @@ function render() {
   renderStats();
   renderMascot();
   saveState();
+}
+
+function setSyncStatus(message) {
+  syncStatus.textContent = message;
+}
+
+function canUseCloud() {
+  return supabaseClient && currentUser && cloudReady && !loadingCloudState;
+}
+
+function queueCloudSave() {
+  if (!canUseCloud()) return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer = setTimeout(saveCloudState, 800);
+}
+
+async function saveCloudState() {
+  if (!canUseCloud()) return;
+  setSyncStatus("Guardando en nube...");
+  const { error } = await supabaseClient
+    .from(cloudTable)
+    .upsert({
+      user_id: currentUser.id,
+      state,
+      updated_at: new Date().toISOString()
+    });
+
+  setSyncStatus(error ? "No se pudo sincronizar" : "Sincronizado");
+}
+
+async function loadCloudState() {
+  if (!supabaseClient || !currentUser) return;
+  loadingCloudState = true;
+  setSyncStatus("Cargando nube...");
+
+  const { data, error } = await supabaseClient
+    .from(cloudTable)
+    .select("state")
+    .eq("user_id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    setSyncStatus("Revisa la tabla en Supabase");
+    loadingCloudState = false;
+    return;
+  }
+
+  if (data?.state) {
+    state = normalizeState(data.state);
+    localStorage.setItem(storeKey, JSON.stringify(state));
+  }
+
+  cloudReady = true;
+  loadingCloudState = false;
+  render();
+  if (!data?.state) saveCloudState();
+  setSyncStatus("Sincronizado");
+}
+
+async function initCloudSync() {
+  if (!window.supabase || supabaseAnonKey.includes("REEMPLAZA")) {
+    setSyncStatus("Guardado local");
+    return;
+  }
+
+  supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+  const { data } = await supabaseClient.auth.getSession();
+  currentUser = data.session?.user || null;
+  renderAuthState();
+  if (currentUser) loadCloudState();
+
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    currentUser = session?.user || null;
+    cloudReady = false;
+    renderAuthState();
+    if (currentUser) {
+      loadCloudState();
+    } else {
+      setSyncStatus("Guardado local");
+    }
+  });
+}
+
+function renderAuthState() {
+  const signedIn = Boolean(currentUser);
+  authForm.hidden = signedIn;
+  authUser.hidden = !signedIn;
+  authUserEmail.textContent = currentUser?.email || "";
+  setSyncStatus(signedIn ? "Conectando..." : "Guardado local");
 }
 
 function visibleTasks() {
@@ -421,6 +525,42 @@ form.addEventListener("submit", (event) => {
   render();
 });
 
+authForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!supabaseClient) {
+    setSyncStatus("Configura Supabase primero");
+    return;
+  }
+
+  setSyncStatus("Entrando...");
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email: authEmail.value.trim(),
+    password: authPassword.value
+  });
+
+  if (error) setSyncStatus("No se pudo entrar");
+});
+
+document.querySelector("#signUp").addEventListener("click", async () => {
+  if (!supabaseClient) {
+    setSyncStatus("Configura Supabase primero");
+    return;
+  }
+
+  setSyncStatus("Creando cuenta...");
+  const { error } = await supabaseClient.auth.signUp({
+    email: authEmail.value.trim(),
+    password: authPassword.value
+  });
+
+  setSyncStatus(error ? "No se pudo crear" : "Cuenta creada. Revisa el correo.");
+});
+
+document.querySelector("#signOut").addEventListener("click", async () => {
+  if (!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+});
+
 chips.forEach((chip) => {
   chip.addEventListener("click", () => {
     activeFilter = chip.dataset.filter;
@@ -551,6 +691,7 @@ if (state.timer?.running) {
 
 applyTheme(localStorage.getItem(themeKey) || "light");
 render();
+initCloudSync();
 checkScheduledReports();
 setInterval(checkScheduledReports, 60 * 1000);
 

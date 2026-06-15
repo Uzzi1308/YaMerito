@@ -21,6 +21,23 @@
         </div>
       </header>
 
+      <section class="auth-panel" aria-label="Sincronizacion en la nube">
+        <div class="auth-panel__status">
+          <span>Nube</span>
+          <strong id="syncStatus">Guardado local</strong>
+        </div>
+        <form id="authForm" class="auth-form">
+          <input id="authEmail" name="email" type="email" autocomplete="email" placeholder="correo" required />
+          <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="contraseña" required />
+          <button id="signIn" class="ghost" type="submit">Entrar</button>
+          <button id="signUp" class="primary" type="button">Crear</button>
+        </form>
+        <div id="authUser" class="auth-user" hidden>
+          <span id="authUserEmail"></span>
+          <button id="signOut" class="ghost" type="button">Salir</button>
+        </div>
+      </section>
+
       <section class="hero" aria-label="Resumen creativo">
         <div class="hero__image" aria-hidden="true"></div>
         <div class="hero__content">
@@ -311,6 +328,7 @@
       </select>
     </section>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="./app.js"></script>
   </body>
 </html>

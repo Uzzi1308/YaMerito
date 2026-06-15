@@ -132,6 +132,82 @@ textarea {
   color: white;
 }
 
+.auth-panel {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px;
+  background: var(--surface);
+  box-shadow: 0 10px 28px rgba(47, 24, 74, 0.08);
+}
+
+.auth-panel__status {
+  display: grid;
+  gap: 2px;
+}
+
+.auth-panel__status span {
+  color: var(--violet);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.auth-panel__status strong {
+  font-size: 0.92rem;
+}
+
+.auth-form,
+.auth-user {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.auth-form input {
+  width: 170px;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 12px;
+  background: var(--surface-solid);
+  color: var(--ink);
+  outline: none;
+}
+
+.auth-form input:focus {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+}
+
+.auth-form .ghost,
+.auth-user .ghost {
+  width: auto;
+  min-width: 70px;
+  padding: 0 14px;
+}
+
+.auth-form .primary {
+  min-height: 40px;
+  border-radius: 10px;
+  padding: 0 14px;
+}
+
+.auth-user span {
+  max-width: 220px;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .hero {
   position: relative;
   min-height: clamp(330px, 45vh, 520px);
@@ -1328,6 +1404,23 @@ body[data-theme="dark"] .approval-control select[data-approval="Aprobado"] {
 @media (max-width: 680px) {
   .shell {
     padding: 12px;
+  }
+
+  .auth-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-form,
+  .auth-user {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .auth-form input,
+  .auth-form .ghost,
+  .auth-form .primary,
+  .auth-user .ghost {
+    width: 100%;
   }
 
   .hero {
