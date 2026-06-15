@@ -350,15 +350,20 @@
           <form id="profileForm" class="profile-form">
             <label>
               <span>Nombre</span>
-              <input id="profileName" name="name" type="text" autocomplete="name" placeholder="Nombre bonito" />
+              <input id="profileName" name="name" type="text" autocomplete="name" placeholder="Nombre" />
             </label>
-            <label>
-              <span>Imagen</span>
-              <input id="profileAvatar" name="avatar" type="url" placeholder="https://..." />
-            </label>
+            <div class="profile-photo-field">
+              <span>Foto de perfil</span>
+              <label class="profile-photo-button">
+                <input id="profileAvatarFile" name="avatarFile" type="file" accept="image/*" />
+                <span>Subir foto</span>
+              </label>
+              <button id="removeProfileAvatar" class="ghost" type="button">Quitar</button>
+              <small id="profileAvatarStatus">JPG, PNG o WebP</small>
+            </div>
             <label class="profile-form__wide">
-              <span>Nota de perfil</span>
-              <textarea id="profileNote" name="note" placeholder="Algo bonito para recordar"></textarea>
+              <span>Descripción</span>
+              <textarea id="profileNote" name="note" placeholder="Descripción"></textarea>
             </label>
             <div class="profile-settings profile-form__wide">
               <span>Configuraciones de perfil</span>

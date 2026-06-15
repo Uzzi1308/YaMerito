@@ -1343,13 +1343,15 @@ body[data-theme="dark"] .approval-control select[data-approval="Aprobado"] {
 }
 
 .auth-form label,
-.profile-form label {
+.profile-form label,
+.profile-photo-field {
   display: grid;
   gap: 6px;
 }
 
 .auth-form label span,
 .profile-form label span,
+.profile-photo-field > span,
 .profile-settings > span,
 .profile-summary small {
   color: var(--muted);
@@ -1375,6 +1377,55 @@ body[data-theme="dark"] .approval-control select[data-approval="Aprobado"] {
   min-height: 86px;
   padding-top: 12px;
   resize: vertical;
+}
+
+.profile-photo-field {
+  grid-template-columns: 1fr auto;
+}
+
+.profile-photo-field > span,
+.profile-photo-field small {
+  grid-column: 1 / -1;
+}
+
+.profile-photo-field small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.profile-photo-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  min-height: 44px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 14px;
+  background: var(--violet);
+  color: white;
+  font-size: 0.86rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.profile-photo-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(124, 58, 237, 0.22);
+}
+
+.profile-photo-button input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.profile-photo-field .ghost {
+  width: auto;
+  min-height: 44px;
+  padding: 0 14px;
 }
 
 .auth-form input:focus,

@@ -30,6 +30,7 @@ let currentUser = null;
 let cloudReady = false;
 let cloudSaveTimer = null;
 let loadingCloudState = false;
+let pendingProfileAvatar = null;
 
 const laneWrap = document.querySelector("#lanes");
 const template = document.querySelector("#taskTemplate");
@@ -70,7 +71,8 @@ const authUserEmail = document.querySelector("#authUserEmail");
 const syncStatus = document.querySelector("#syncStatus");
 const profileForm = document.querySelector("#profileForm");
 const profileName = document.querySelector("#profileName");
-const profileAvatar = document.querySelector("#profileAvatar");
+const profileAvatarFile = document.querySelector("#profileAvatarFile");
+const profileAvatarStatus = document.querySelector("#profileAvatarStatus");
 const profileNote = document.querySelector("#profileNote");
 const profileAvatarPreview = document.querySelector("#profileAvatarPreview");
 const profileInitial = document.querySelector("#profileInitial");
@@ -274,9 +276,9 @@ function renderAccountButton() {
 function renderProfileFields(force = false) {
   if (!force && profileForm.contains(document.activeElement)) return;
   profileName.value = state.profile.name || "";
-  profileAvatar.value = state.profile.avatar || "";
   profileNote.value = state.profile.note || "";
   profileInitial.textContent = getProfileInitial();
+  profileAvatarStatus.textContent = state.profile.avatar ? "Foto cargada" : "JPG, PNG o WebP";
 
   const avatar = state.profile.avatar?.trim();
   if (avatar) {
@@ -648,13 +650,71 @@ profileForm.addEventListener("submit", (event) => {
   event.preventDefault();
   state.profile = {
     name: profileName.value.trim(),
-    avatar: profileAvatar.value.trim(),
+    avatar: pendingProfileAvatar ?? state.profile.avatar,
     note: profileNote.value.trim()
   };
+  pendingProfileAvatar = null;
+  profileAvatarFile.value = "";
   render();
   renderProfileFields(true);
   setSyncStatus("Perfil guardado");
 });
+
+profileAvatarFile.addEventListener("change", async () => {
+  const file = profileAvatarFile.files?.[0];
+  if (!file) return;
+
+  profileAvatarStatus.textContent = "Preparando foto...";
+  try {
+    pendingProfileAvatar = await resizeProfileImage(file);
+    profileAvatarPreview.src = pendingProfileAvatar;
+    profileAvatarPreview.hidden = false;
+    profileInitial.hidden = true;
+    profileAvatarStatus.textContent = "Lista para guardar";
+  } catch {
+    pendingProfileAvatar = null;
+    profileAvatarFile.value = "";
+    profileAvatarStatus.textContent = "No se pudo cargar la foto";
+  }
+});
+
+document.querySelector("#removeProfileAvatar").addEventListener("click", () => {
+  pendingProfileAvatar = "";
+  profileAvatarFile.value = "";
+  profileAvatarPreview.hidden = true;
+  profileInitial.hidden = false;
+  profileAvatarStatus.textContent = "Foto quitada. Guarda el perfil.";
+});
+
+function resizeProfileImage(file) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("Archivo no valido"));
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener("error", reject);
+    reader.addEventListener("load", () => {
+      const image = new Image();
+      image.addEventListener("error", reject);
+      image.addEventListener("load", () => {
+        const size = 360;
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        const side = Math.min(image.width, image.height);
+        const sourceX = (image.width - side) / 2;
+        const sourceY = (image.height - side) / 2;
+        canvas.width = size;
+        canvas.height = size;
+        context.drawImage(image, sourceX, sourceY, side, side, 0, 0, size, size);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      });
+      image.src = reader.result;
+    });
+    reader.readAsDataURL(file);
+  });
+}
 
 chips.forEach((chip) => {
   chip.addEventListener("click", () => {
