@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Atelier de Marketing</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar" aria-label="Preferencias visuales">
+        <div>
+        </div>
+        <div class="theme-switch" aria-label="Cambiar tema">
+          <button class="is-active" type="button" data-theme-choice="light" title="Tema claro" aria-label="Tema claro">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"/><circle cx="12" cy="12" r="4"/></svg>
+          </button>
+          <button type="button" data-theme-choice="dark" title="Tema oscuro" aria-label="Tema oscuro">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A7.7 7.7 0 0 1 9.4 3.5 8.7 8.7 0 1 0 20.5 14.6Z"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="hero" aria-label="Resumen creativo">
+        <div class="hero__image" aria-hidden="true"></div>
+        <div class="hero__content">
+          <p class="eyebrow">Atelier de marketing</p>
+          <h1>¿Qué tenemos pendiente hoy?</h1>
+          <div class="hero__stats" aria-label="Indicadores del dia">
+            <article>
+              <span id="statActive">0</span>
+              <small>en movimiento</small>
+            </article>
+            <article>
+              <span id="statHot">0</span>
+              <small>urgentes</small>
+            </article>
+            <article>
+              <span id="statDone">0</span>
+              <small>cerradas</small>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="composer" aria-label="Nueva tarea">
+        <form id="taskForm" class="task-form">
+          <label>
+            <span>Tarea</span>
+            <input id="taskTitle" name="title" type="text" placeholder="Post carrusel, landing, mockup..." required />
+          </label>
+          <label>
+            <span>Cliente o proyecto</span>
+            <input id="taskProject" name="project" type="text" placeholder="Marca, campaña o área" />
+          </label>
+          <label>
+            <span>Tipo</span>
+            <select id="taskType" name="type">
+              <option>Diseño</option>
+              <option>Contenido</option>
+              <option>Campaña</option>
+              <option>Revisión</option>
+              <option>Entrega</option>
+            </select>
+          </label>
+          <label>
+            <span>Prioridad</span>
+            <select id="taskPriority" name="priority">
+              <option value="Media">Media</option>
+              <option value="Alta">Alta</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </label>
+          <label>
+            <span>Entrega</span>
+            <input id="taskDue" name="due" type="date" />
+          </label>
+          <label>
+            <span>Aprobación</span>
+            <select id="taskApproval" name="approval">
+              <option>Pendiente</option>
+              <option>Cambios</option>
+              <option>Aprobado</option>
+            </select>
+          </label>
+          <label class="task-form__link">
+            <span>Link del archivo</span>
+            <input id="taskLink" name="link" type="url" placeholder="Canva, Figma, Drive..." />
+          </label>
+          <label class="task-form__notes">
+            <span>Notas rápidas</span>
+            <textarea id="taskNotes" name="notes" placeholder="Medidas, feedback, links o pendientes puntuales"></textarea>
+          </label>
+          <button class="primary" type="submit" aria-label="Agregar tarea">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            Agregar
+          </button>
+        </form>
+      </section>
+
+      <section class="workspace">
+        <aside class="side-panel" aria-label="Herramientas de flujo">
+          <div class="panel-block">
+            <div class="section-head">
+              <h2>Herramientas</h2>
+            </div>
+            <div class="tool-links" aria-label="Links a herramientas de diseño">
+              <a class="tool-link tool-link--canva" href="https://www.canva.com/" target="_blank" rel="noreferrer" title="Canva" aria-label="Canva">
+                <span class="bxl--canva" aria-hidden="true"></span>
+              </a>
+              <a class="tool-link tool-link--figma" href="https://www.figma.com/" target="_blank" rel="noreferrer" title="Figma" aria-label="Figma">
+                <img src="https://api.iconify.design/logos:figma.svg" alt="" aria-hidden="true" />
+              </a>
+              <a class="tool-link tool-link--pinterest" href="https://www.pinterest.com/" target="_blank" rel="noreferrer" title="Pinterest" aria-label="Pinterest">
+                <img src="https://api.iconify.design/logos:pinterest.svg" alt="" aria-hidden="true" />
+              </a>
+              <a class="tool-link tool-link--gmail" href="https://mail.google.com/" target="_blank" rel="noreferrer" title="Gmail" aria-label="Gmail">
+                <img src="https://api.iconify.design/logos:google-gmail.svg" alt="" aria-hidden="true" />
+              </a>
+              <a class="tool-link tool-link--drive" href="https://drive.google.com/" target="_blank" rel="noreferrer" title="Google Drive" aria-label="Google Drive">
+                <img src="https://api.iconify.design/logos:google-drive.svg" alt="" aria-hidden="true" />
+              </a>
+              <a class="tool-link" href="https://calendar.google.com/" target="_blank" rel="noreferrer" title="Google Calendar" aria-label="Google Calendar">
+                <img src="https://api.iconify.design/logos:google-calendar.svg" alt="" aria-hidden="true" />
+              </a>
+              <a class="tool-link" href="https://keep.google.com/" target="_blank" rel="noreferrer" title="Google Keep" aria-label="Google Keep">
+                <img src="https://api.iconify.design/logos:google-keep.svg" alt="" aria-hidden="true" />
+              </a>
+              <a class="tool-link" href="https://fonts.google.com/" target="_blank" rel="noreferrer" title="Google Fonts" aria-label="Google Fonts">
+                <img src="https://api.iconify.design/simple-icons:googlefonts.svg?color=%237C3AED" alt="" aria-hidden="true" />
+              </a>
+              <a class="tool-link tool-link--chatgpt" href="https://chatgpt.com/" target="_blank" rel="noreferrer" title="ChatGPT" aria-label="ChatGPT">
+                <img src="https://api.iconify.design/simple-icons:openai.svg?color=%237C3AED" alt="" aria-hidden="true" />
+              </a>
+            </div>
+          </div>
+
+          <div class="panel-block">
+            <div class="section-head">
+              <h2>Enfoque</h2>
+              <div class="head-actions">
+                <button id="testReport" class="icon-btn" type="button" title="Probar cierre" aria-label="Probar cierre">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/></svg>
+                </button>
+                <button id="resetData" class="icon-btn" type="button" title="Limpiar tablero" aria-label="Limpiar tablero">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v7h7"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="focus-card">
+              <span id="focusLabel">Hoy</span>
+              <strong id="focusText">Ordenar pendientes creativos</strong>
+            </div>
+            <div class="filter-group" aria-label="Filtrar tareas">
+              <button class="chip is-active" type="button" data-filter="Todas">Todas</button>
+              <button class="chip" type="button" data-filter="Alta">Alta</button>
+              <button class="chip" type="button" data-filter="Media">Media</button>
+              <button class="chip" type="button" data-filter="Baja">Baja</button>
+            </div>
+          </div>
+
+          <div class="panel-block">
+            <div class="section-head">
+              <h2>Ideas rápidas</h2>
+              <button id="addIdea" class="icon-btn" type="button" title="Agregar idea" aria-label="Agregar idea">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+            <div id="ideasList" class="idea-stack"></div>
+          </div>
+
+          <div class="panel-block water-panel">
+            <div class="section-head">
+              <h2>Agua</h2>
+              <button id="resetWater" class="icon-btn" type="button" title="Reiniciar agua" aria-label="Reiniciar agua">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v7h7"/></svg>
+              </button>
+            </div>
+            <div class="water-tracker">
+              <button id="addWater" class="water-button" type="button" title="Agregar botella de agua" aria-label="Agregar botella de agua">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 2h6M10 2v5l-2 3v10a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V10l-2-3V2"/><path d="M8 14h8"/></svg>
+              </button>
+              <div>
+                <strong id="waterCount">0</strong>
+                <span>botellitas hoy</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-block timer-panel">
+            <div class="section-head">
+              <h2>Concentración</h2>
+            </div>
+            <div class="timer-ring" id="timerRing" style="--progress: 0deg">
+              <div>
+                <span id="timerMode">Pomodoro</span>
+                <strong id="timerDisplay">25:00</strong>
+              </div>
+            </div>
+            <div class="session-counter" aria-label="Sesiones Pomodoro completadas">
+              <strong id="pomodoroSessions">0</strong>
+              <span>sesiones completadas hoy</span>
+            </div>
+            <div class="timer-presets" aria-label="Duración del temporizador">
+              <button class="chip is-active" type="button" data-minutes="25">25 min</button>
+              <button class="chip" type="button" data-minutes="5">5 min</button>
+              <button class="chip" type="button" data-minutes="15">15 min</button>
+            </div>
+            <div class="timer-actions">
+              <button id="timerStart" class="primary" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7V5Z"/></svg>
+                Iniciar
+              </button>
+              <button id="timerReset" class="icon-btn" type="button" title="Reiniciar temporizador" aria-label="Reiniciar temporizador">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v7h7"/></svg>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        <section class="board" aria-label="Tablero de tareas">
+          <div class="board-head">
+            <h2>Mapa de pendientes</h2>
+            <div class="view-toggle" aria-label="Modo de vista">
+              <button class="is-active" type="button" data-view="flow">Flujo</button>
+              <button type="button" data-view="today">Hoy</button>
+              <button type="button" data-view="week">Semana</button>
+            </div>
+          </div>
+          <div class="lanes" id="lanes"></div>
+        </section>
+      </section>
+
+      <section class="dog-panel dog-panel--wide" aria-label="Regalito de perritos">
+        <div class="section-head">
+          <h2>Regalito</h2>
+        </div>
+        <div class="dog-layout">
+          <button id="dogGift" class="dog-gift" type="button" aria-label="Abrir regalito de perrito">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12v8H4v-8"/><path d="M2 7h20v5H2z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7Z"/><path d="M12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7Z"/></svg>
+            <span>Un perrito para descansar tantito</span>
+          </button>
+          <figure id="dogCard" class="dog-card" hidden>
+            <img id="dogImage" alt="Perrito aleatorio" />
+            <figcaption id="dogCaption">Un respiro bonito.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+    </main>
+
+    <template id="taskTemplate">
+      <article class="task-card" draggable="true">
+        <div class="task-card__top">
+          <span class="pill"></span>
+          <button class="icon-btn task-delete" type="button" title="Eliminar tarea" aria-label="Eliminar tarea">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <h3></h3>
+        <p></p>
+        <div class="task-card__date"></div>
+        <label class="approval-control">
+          <span>Aprobación</span>
+          <select aria-label="Estado de aprobación">
+            <option>Pendiente</option>
+            <option>Cambios</option>
+            <option>Aprobado</option>
+          </select>
+        </label>
+        <a class="task-link" target="_blank" rel="noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1"/></svg>
+          Abrir archivo
+        </a>
+        <label class="task-note">
+          <span>Notas</span>
+          <textarea aria-label="Notas de la tarea" placeholder="Agregar nota rápida"></textarea>
+        </label>
+        <div class="task-card__meta">
+          <span class="type"></span>
+          <button class="ghost next-step" type="button" title="Avanzar tarea" aria-label="Avanzar tarea">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+      </article>
+    </template>
+
+    <section id="reportModal" class="report-modal" aria-hidden="true">
+      <div class="report-card" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+        <button id="closeReport" class="icon-btn report-close" type="button" title="Cerrar" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <p id="reportKicker" class="eyebrow">Cierre del día</p>
+        <h2 id="reportTitle">Hoy avanzaste más de lo que parece.</h2>
+        <ul id="reportStats" class="report-stats"></ul>
+        <p id="reportMessage" class="report-message">Buen cierre. Descansa, mañana será un buen día.</p>
+      </div>
+    </section>
+
+    <section class="mascot-widget" aria-label="Mascota del dashboard">
+      <div id="mascotBubble" class="mascot-bubble">Vamos una cosa a la vez.</div>
+      <button id="mascotButton" class="mascot-button" type="button" title="Cambiar mascota" aria-label="Cambiar mascota">
+        <img id="mascotImage" class="mascot-image" alt="" aria-hidden="true" />
+      </button>
+      <select id="mascotSelect" class="mascot-select" aria-label="Seleccionar mascota">
+        <option value="dog">Perro</option>
+        <option value="penguin">Pingüino</option>
+        <option value="fox">Zorro</option>
+        <option value="duck">Pato</option>
+        <option value="dino">Dinosaurio</option>
+      </select>
+    </section>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
