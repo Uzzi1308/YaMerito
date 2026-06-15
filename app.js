@@ -67,6 +67,7 @@ const accountInitial = document.querySelector("#accountInitial");
 const authModal = document.querySelector("#authModal");
 const authGuest = document.querySelector("#authGuest");
 const authProfile = document.querySelector("#authProfile");
+const authTitle = document.querySelector("#authTitle");
 const authUserEmail = document.querySelector("#authUserEmail");
 const syncStatus = document.querySelector("#syncStatus");
 const profileForm = document.querySelector("#profileForm");
@@ -233,6 +234,7 @@ function renderAuthState() {
   authGuest.hidden = signedIn;
   authProfile.hidden = !signedIn;
   authUserEmail.textContent = currentUser?.email || "";
+  authTitle.textContent = signedIn ? state.profile.name || "Tu perfil" : "Tu cuenta";
   setSyncStatus(signedIn ? "Conectando..." : "Guardado local");
   renderAccountButton();
   renderProfileFields(true);
@@ -250,7 +252,7 @@ function closeAuthModal() {
 }
 
 function getProfileInitial() {
-  const source = state.profile.name || currentUser?.email || "YaMerito";
+  const source = state.profile.name || currentUser?.email || "";
   return source.trim().charAt(0).toUpperCase();
 }
 
@@ -266,6 +268,7 @@ function renderAccountButton() {
     accountAvatar.hidden = true;
     accountIcon.hidden = true;
     accountInitial.hidden = false;
+    accountInitial.textContent = getProfileInitial();
   } else {
     accountAvatar.hidden = true;
     accountIcon.hidden = false;
@@ -275,6 +278,7 @@ function renderAccountButton() {
 
 function renderProfileFields(force = false) {
   if (!force && profileForm.contains(document.activeElement)) return;
+  if (currentUser) authTitle.textContent = state.profile.name || "Tu perfil";
   profileName.value = state.profile.name || "";
   profileNote.value = state.profile.note || "";
   profileInitial.textContent = getProfileInitial();

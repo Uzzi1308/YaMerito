@@ -1298,7 +1298,6 @@ body[data-theme="dark"] .approval-control select[data-approval="Aprobado"] {
   padding-right: 42px;
 }
 
-.auth-card__icon,
 .profile-summary > span {
   display: inline-grid;
   flex: 0 0 auto;
@@ -1309,16 +1308,6 @@ body[data-theme="dark"] .approval-control select[data-approval="Aprobado"] {
   background: var(--violet);
   color: white;
   box-shadow: 0 12px 26px rgba(124, 58, 237, 0.24);
-}
-
-.auth-card__icon svg {
-  width: 24px;
-  height: 24px;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2;
 }
 
 .auth-card__head h2 {
