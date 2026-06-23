@@ -11,13 +11,16 @@ const seed = {
   water: { count: 0, date: getDateKey() },
   timer: { minutes: 25, remaining: 25 * 60, running: false, completed: 0, completedDate: getDateKey(), history: {} },
   reports: { dailyShown: "", weeklyShown: "" },
-  profile: { name: "", avatar: "", note: "" }
+  profile: { name: "", avatar: "", note: "" },
+  roadGame: { code: "" }
 };
 
 const storeKey = "atelier-marketing-dashboard-v2";
 const themeKey = "atelier-marketing-theme";
 const mascotKey = "atelier-marketing-mascot";
 const cloudTable = "dashboard_states";
+const roadGamesTable = "road_games";
+const roadSpottingsTable = "road_spottings";
 const supabaseUrl = "https://ljwwbnjgdmczdhckcztf.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqd3dibmpnZG1jemRoY2tjenRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NDU3MTEsImV4cCI6MjA5NzEyMTcxMX0.PGz3a1mry1HOJsI1YY1vyoHclJdUfucZR6BNZay6Jqc";
 let state = loadState();
@@ -31,6 +34,8 @@ let cloudReady = false;
 let cloudSaveTimer = null;
 let loadingCloudState = false;
 let pendingProfileAvatar = null;
+let roadGameData = null;
+let roadSpottings = [];
 
 const laneWrap = document.querySelector("#lanes");
 const template = document.querySelector("#taskTemplate");
@@ -77,6 +82,19 @@ const profileAvatarStatus = document.querySelector("#profileAvatarStatus");
 const profileNote = document.querySelector("#profileNote");
 const profileAvatarPreview = document.querySelector("#profileAvatarPreview");
 const profileInitial = document.querySelector("#profileInitial");
+const roadGameStatus = document.querySelector("#roadGameStatus");
+const roadGameCode = document.querySelector("#roadGameCode");
+const joinRoadCode = document.querySelector("#joinRoadCode");
+const roadSpotForm = document.querySelector("#roadSpotForm");
+const roadMeName = document.querySelector("#roadMeName");
+const roadMeTotal = document.querySelector("#roadMeTotal");
+const roadMeBochos = document.querySelector("#roadMeBochos");
+const roadMeCombis = document.querySelector("#roadMeCombis");
+const roadOtherName = document.querySelector("#roadOtherName");
+const roadOtherTotal = document.querySelector("#roadOtherTotal");
+const roadOtherBochos = document.querySelector("#roadOtherBochos");
+const roadOtherCombis = document.querySelector("#roadOtherCombis");
+const roadHistory = document.querySelector("#roadHistory");
 
 const mascotSprites = {
   dog: "./assets/mascots/dog.png",
@@ -110,7 +128,8 @@ function normalizeState(savedState) {
     timer,
     water: normalizeWater(savedState.water),
     reports: { ...seed.reports, ...(savedState.reports || {}) },
-    profile: { ...seed.profile, ...(savedState.profile || {}) }
+    profile: { ...seed.profile, ...(savedState.profile || {}) },
+    roadGame: { ...seed.roadGame, ...(savedState.roadGame || {}) }
   };
 }
 
@@ -145,6 +164,7 @@ function render() {
   renderMascot();
   renderAccountButton();
   renderProfileFields();
+  renderRoadGame();
   saveState();
 }
 
@@ -202,6 +222,7 @@ async function loadCloudState() {
   loadingCloudState = false;
   render();
   if (!data?.state) saveCloudState();
+  loadRoadGame();
   setSyncStatus("Sincronizado");
 }
 
@@ -225,6 +246,9 @@ async function initCloudSync() {
       loadCloudState();
     } else {
       setSyncStatus("Guardado local");
+      roadGameData = null;
+      roadSpottings = [];
+      renderRoadGame();
     }
   });
 }
@@ -293,6 +317,223 @@ function renderProfileFields(force = false) {
     profileAvatarPreview.hidden = true;
     profileInitial.hidden = false;
   }
+}
+
+function getPlayerName() {
+  return state.profile.name || currentUser?.email?.split("@")[0] || "Yo";
+}
+
+function getRoadGameCode() {
+  return (state.roadGame?.code || "").toUpperCase();
+}
+
+function renderRoadGame() {
+  const code = getRoadGameCode();
+  const signedIn = Boolean(currentUser);
+  roadGameCode.textContent = code || "----";
+  roadSpotForm.querySelector("button").disabled = !signedIn || !code;
+  document.querySelector("#createRoadGame").disabled = !signedIn;
+  document.querySelector("#joinRoadGame").disabled = !signedIn;
+
+  if (!signedIn) {
+    roadGameStatus.textContent = "Inicia sesión para competir";
+  } else if (!code) {
+    roadGameStatus.textContent = "Crea un código o únete a uno";
+  } else if (!roadGameData) {
+    roadGameStatus.textContent = "Reto listo para cargar";
+  } else {
+    roadGameStatus.textContent = roadGameData.joined_by ? "Reto conectado" : "Comparte el código";
+  }
+
+  const mine = roadSpottings.filter((spot) => spot.user_id === currentUser?.id);
+  const other = roadSpottings.filter((spot) => spot.user_id !== currentUser?.id);
+  renderRoadStats(mine, other);
+  renderRoadHistory();
+}
+
+function renderRoadStats(mine, other) {
+  roadMeName.textContent = getPlayerName();
+  roadOtherName.textContent = getRoadOtherName();
+  roadMeTotal.textContent = mine.length;
+  roadMeBochos.textContent = countRoadType(mine, "bocho");
+  roadMeCombis.textContent = countRoadType(mine, "combi");
+  roadOtherTotal.textContent = other.length;
+  roadOtherBochos.textContent = countRoadType(other, "bocho");
+  roadOtherCombis.textContent = countRoadType(other, "combi");
+}
+
+function renderRoadHistory() {
+  roadHistory.innerHTML = "";
+  const recent = roadSpottings.slice(0, 8);
+  if (!recent.length) {
+    const empty = document.createElement("li");
+    empty.innerHTML = "<span>Aún no hay avistamientos</span><span>Empieza el reto</span>";
+    roadHistory.appendChild(empty);
+    return;
+  }
+
+  recent.forEach((spot) => {
+    const item = document.createElement("li");
+    const owner = spot.user_id === currentUser?.id ? "Tú" : getRoadOtherName();
+    const vehicle = spot.vehicle_type === "bocho" ? "Bocho" : "Combi";
+    item.innerHTML = `<span>${owner}: ${vehicle} ${escapeHtml(spot.color)}</span><span>${formatRoadTime(spot.created_at)}</span>`;
+    roadHistory.appendChild(item);
+  });
+}
+
+function countRoadType(items, type) {
+  return items.filter((item) => item.vehicle_type === type).length;
+}
+
+function getRoadOtherName() {
+  if (!roadGameData) return "Otra persona";
+  if (roadGameData.created_by === currentUser?.id) return roadGameData.joined_name || "Otra persona";
+  return roadGameData.created_name || "Otra persona";
+}
+
+function formatRoadTime(value) {
+  if (!value) return "";
+  return new Date(value).toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+}
+
+function createRoadCode() {
+  return Math.random().toString(36).slice(2, 8).toUpperCase();
+}
+
+async function createRoadGame() {
+  if (!canUseCloud()) {
+    roadGameStatus.textContent = "Inicia sesión para crear un reto";
+    return;
+  }
+
+  const code = createRoadCode();
+  const { data, error } = await supabaseClient
+    .from(roadGamesTable)
+    .insert({
+      code,
+      created_by: currentUser.id,
+      created_name: getPlayerName()
+    })
+    .select()
+    .single();
+
+  if (error) {
+    roadGameStatus.textContent = "No se pudo crear el código";
+    return;
+  }
+
+  state.roadGame.code = code;
+  roadGameData = data;
+  roadSpottings = [];
+  joinRoadCode.value = "";
+  render();
+  saveCloudState();
+}
+
+async function joinRoadGame() {
+  if (!canUseCloud()) {
+    roadGameStatus.textContent = "Inicia sesión para unirte";
+    return;
+  }
+
+  const code = joinRoadCode.value.trim().toUpperCase();
+  if (!code) return;
+
+  const { data: game, error: readError } = await supabaseClient
+    .from(roadGamesTable)
+    .select()
+    .eq("code", code)
+    .maybeSingle();
+
+  if (readError || !game) {
+    roadGameStatus.textContent = "Código no encontrado";
+    return;
+  }
+
+  const update = game.created_by === currentUser.id
+    ? { created_name: getPlayerName() }
+    : { joined_by: currentUser.id, joined_name: getPlayerName() };
+
+  const { data, error } = await supabaseClient
+    .from(roadGamesTable)
+    .update(update)
+    .eq("code", code)
+    .select()
+    .single();
+
+  if (error) {
+    roadGameStatus.textContent = "No se pudo unir al reto";
+    return;
+  }
+
+  state.roadGame.code = code;
+  roadGameData = data;
+  joinRoadCode.value = "";
+  render();
+  saveCloudState();
+  loadRoadGame();
+}
+
+async function loadRoadGame() {
+  const code = getRoadGameCode();
+  if (!supabaseClient || !currentUser || !code) {
+    renderRoadGame();
+    return;
+  }
+
+  const { data: game, error: gameError } = await supabaseClient
+    .from(roadGamesTable)
+    .select()
+    .eq("code", code)
+    .maybeSingle();
+
+  if (gameError || !game) {
+    roadGameStatus.textContent = "No se pudo cargar el reto";
+    return;
+  }
+
+  const { data: spots, error: spotsError } = await supabaseClient
+    .from(roadSpottingsTable)
+    .select()
+    .eq("game_code", code)
+    .order("created_at", { ascending: false });
+
+  if (spotsError) {
+    roadGameStatus.textContent = "No se pudo cargar el marcador";
+    return;
+  }
+
+  roadGameData = game;
+  roadSpottings = spots || [];
+  renderRoadGame();
+}
+
+async function addRoadSpotting(event) {
+  event.preventDefault();
+  const code = getRoadGameCode();
+  if (!canUseCloud() || !code) {
+    roadGameStatus.textContent = "Primero crea o únete a un reto";
+    return;
+  }
+
+  const formData = new FormData(roadSpotForm);
+  const { error } = await supabaseClient
+    .from(roadSpottingsTable)
+    .insert({
+      game_code: code,
+      user_id: currentUser.id,
+      vehicle_type: formData.get("type"),
+      color: formData.get("color")
+    });
+
+  if (error) {
+    roadGameStatus.textContent = "No se pudo agregar";
+    return;
+  }
+
+  roadGameStatus.textContent = "Avistamiento agregado";
+  showMascotMessage("Punto para el reto.");
+  loadRoadGame();
 }
 
 function visibleTasks() {
@@ -688,6 +929,15 @@ document.querySelector("#removeProfileAvatar").addEventListener("click", () => {
   profileAvatarPreview.hidden = true;
   profileInitial.hidden = false;
   profileAvatarStatus.textContent = "Foto quitada. Guarda el perfil.";
+});
+
+document.querySelector("#createRoadGame").addEventListener("click", createRoadGame);
+document.querySelector("#joinRoadGame").addEventListener("click", joinRoadGame);
+document.querySelector("#refreshRoadGame").addEventListener("click", loadRoadGame);
+roadSpotForm.addEventListener("submit", addRoadSpotting);
+
+joinRoadCode.addEventListener("input", () => {
+  joinRoadCode.value = joinRoadCode.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 });
 
 function resizeProfileImage(file) {

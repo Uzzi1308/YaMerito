@@ -696,6 +696,173 @@ h2 {
   font-weight: 850;
 }
 
+.road-game-panel {
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: var(--surface);
+  box-shadow: 0 12px 30px rgba(31, 19, 45, 0.08);
+}
+
+.road-game-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1.2fr);
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.road-game-card,
+.road-spot-form,
+.road-scoreboard,
+.road-history {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px;
+  background: var(--surface-solid);
+}
+
+.road-game-card {
+  display: grid;
+  gap: 12px;
+}
+
+.road-code-box {
+  display: grid;
+  gap: 4px;
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--soft);
+  text-align: center;
+}
+
+.road-code-box span,
+.road-code-actions label span,
+.road-spot-form label span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.road-code-box strong {
+  color: var(--violet);
+  font-size: 1.8rem;
+  letter-spacing: 0.14em;
+}
+
+.road-code-actions,
+.road-spot-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.road-code-actions label,
+.road-spot-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.road-code-actions input,
+.road-spot-form select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 12px;
+  background: var(--surface-solid);
+  color: var(--ink);
+  outline: none;
+}
+
+.road-code-actions input:focus,
+.road-spot-form select:focus {
+  border-color: var(--violet);
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+}
+
+.road-code-actions .primary,
+.road-code-actions .ghost,
+.road-spot-form .primary {
+  width: auto;
+  min-height: 42px;
+  padding: 0 14px;
+}
+
+.road-scoreboard {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.road-scoreboard article {
+  display: grid;
+  gap: 4px;
+  border-radius: 14px;
+  padding: 14px;
+  background: var(--soft);
+}
+
+.road-scoreboard span {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.road-scoreboard strong {
+  color: var(--violet);
+  font-size: 2.1rem;
+  line-height: 1;
+}
+
+.road-scoreboard small {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.road-history {
+  grid-column: 1 / -1;
+}
+
+.road-history h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.road-history ul {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.road-history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  border-radius: 12px;
+  padding: 0 12px;
+  background: var(--soft);
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 850;
+}
+
+.road-history li span:last-child {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .tool-links {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1687,6 +1854,19 @@ body[data-theme="dark"] .approval-control select[data-approval="Aprobado"] {
 
   .dog-layout {
     grid-template-columns: 1fr;
+  }
+
+  .road-game-layout,
+  .road-code-actions,
+  .road-spot-form,
+  .road-scoreboard {
+    grid-template-columns: 1fr;
+  }
+
+  .road-code-actions .primary,
+  .road-code-actions .ghost,
+  .road-spot-form .primary {
+    width: 100%;
   }
 
 }

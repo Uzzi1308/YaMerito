@@ -253,6 +253,81 @@
         </div>
       </section>
 
+      <section class="road-game-panel" aria-label="Reto de Bochos y Combis">
+        <div class="section-head">
+          <h2>Bochos y Combis</h2>
+          <button id="refreshRoadGame" class="icon-btn" type="button" title="Actualizar reto" aria-label="Actualizar reto">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v7h7"/></svg>
+          </button>
+        </div>
+
+        <div class="road-game-layout">
+          <div class="road-game-card">
+            <p id="roadGameStatus" class="eyebrow">Inicia sesión para competir</p>
+            <div class="road-code-box">
+              <span>Código</span>
+              <strong id="roadGameCode">----</strong>
+            </div>
+            <div class="road-code-actions">
+              <button id="createRoadGame" class="primary" type="button">Crear código</button>
+              <label>
+                <span>Unirme</span>
+                <input id="joinRoadCode" type="text" maxlength="8" placeholder="ABC123" />
+              </label>
+              <button id="joinRoadGame" class="ghost" type="button">Unir</button>
+            </div>
+          </div>
+
+          <form id="roadSpotForm" class="road-spot-form">
+            <label>
+              <span>Avistamiento</span>
+              <select id="roadVehicleType" name="type">
+                <option value="bocho">Bocho</option>
+                <option value="combi">Combi</option>
+              </select>
+            </label>
+            <label>
+              <span>Color</span>
+              <select id="roadVehicleColor" name="color">
+                <option>Blanco</option>
+                <option>Negro</option>
+                <option>Rojo</option>
+                <option>Azul</option>
+                <option>Verde</option>
+                <option>Amarillo</option>
+                <option>Naranja</option>
+                <option>Morado</option>
+                <option>Rosa</option>
+                <option>Gris</option>
+                <option>Café</option>
+                <option>Otro</option>
+              </select>
+            </label>
+            <button class="primary" type="submit">Agregar</button>
+          </form>
+
+          <div class="road-scoreboard" aria-live="polite">
+            <article>
+              <span id="roadMeName">Tú</span>
+              <strong id="roadMeTotal">0</strong>
+              <small><b id="roadMeBochos">0</b> bochos · <b id="roadMeCombis">0</b> combis</small>
+            </article>
+            <article>
+              <span id="roadOtherName">Otra persona</span>
+              <strong id="roadOtherTotal">0</strong>
+              <small><b id="roadOtherBochos">0</b> bochos · <b id="roadOtherCombis">0</b> combis</small>
+            </article>
+          </div>
+
+          <div class="road-history">
+            <div class="section-head">
+              <h3>Últimos vistos</h3>
+            </div>
+            <ul id="roadHistory"></ul>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <template id="taskTemplate">
