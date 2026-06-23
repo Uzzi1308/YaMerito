@@ -18,6 +18,7 @@ const seed = {
 const storeKey = "atelier-marketing-dashboard-v2";
 const themeKey = "atelier-marketing-theme";
 const mascotKey = "atelier-marketing-mascot";
+const pageKey = "yamerito-active-page";
 const cloudTable = "dashboard_states";
 const roadGamesTable = "road_games";
 const roadSpottingsTable = "road_spottings";
@@ -41,6 +42,9 @@ const laneWrap = document.querySelector("#lanes");
 const template = document.querySelector("#taskTemplate");
 const form = document.querySelector("#taskForm");
 const chips = [...document.querySelectorAll(".filter-group .chip")];
+const pageButtons = [...document.querySelectorAll("[data-page]")];
+const pagePanels = [...document.querySelectorAll("[data-page-panel]")];
+const pageJumpButtons = [...document.querySelectorAll("[data-page-jump]")];
 const ideasList = document.querySelector("#ideasList");
 const timerDisplay = document.querySelector("#timerDisplay");
 const timerMode = document.querySelector("#timerMode");
@@ -153,6 +157,19 @@ function applyTheme(theme) {
   themeButtons.forEach((button) => {
     button.classList.toggle("is-active", button.dataset.themeChoice === theme);
   });
+}
+
+function setAppPage(page) {
+  const target = pagePanels.some((panel) => panel.dataset.pagePanel === page) ? page : "dashboard";
+  pageButtons.forEach((button) => {
+    const active = button.dataset.page === target;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-current", active ? "page" : "false");
+  });
+  pagePanels.forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.pagePanel === target);
+  });
+  localStorage.setItem(pageKey, target);
 }
 
 function render() {
@@ -1021,6 +1038,18 @@ themeButtons.forEach((button) => {
   });
 });
 
+pageButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setAppPage(button.dataset.page);
+  });
+});
+
+pageJumpButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setAppPage(button.dataset.pageJump);
+  });
+});
+
 mascotSelect.addEventListener("change", () => {
   localStorage.setItem(mascotKey, mascotSelect.value);
   renderMascot();
@@ -1099,6 +1128,7 @@ if (state.timer?.running) {
 }
 
 applyTheme(localStorage.getItem(themeKey) || "light");
+setAppPage(localStorage.getItem(pageKey) || "dashboard");
 render();
 initCloudSync();
 checkScheduledReports();

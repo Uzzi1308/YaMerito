@@ -28,6 +28,26 @@
         </div>
       </header>
 
+      <nav class="app-nav" aria-label="Vistas de YaMerito">
+        <button class="is-active" type="button" data-page="dashboard" aria-label="Ver inicio">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4l8 7v9H4v-9Z"/><path d="M9 20v-6h6v6"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button type="button" data-page="work" aria-label="Ver trabajo">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M9 7V5h6v2"/><path d="M4 12h16"/></svg>
+          <span>Trabajo</span>
+        </button>
+        <button type="button" data-page="break" aria-label="Ver descanso">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10v4a5 5 0 0 1-10 0V8Z"/><path d="M17 9h1a3 3 0 0 1 0 6h-1"/><path d="M6 20h12"/></svg>
+          <span>Descanso</span>
+        </button>
+        <button type="button" data-page="challenge" aria-label="Ver retos">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17h10l2-6H5l2 6Z"/><path d="M7 17v2M17 17v2"/><path d="M8 11V7h8v4"/></svg>
+          <span>Retos</span>
+        </button>
+      </nav>
+
+      <section class="app-view is-active" data-page-panel="dashboard">
       <section class="hero" aria-label="Resumen creativo">
         <div class="hero__image" aria-hidden="true"></div>
         <div class="hero__content">
@@ -48,7 +68,32 @@
           </div>
         </div>
       </section>
+      <section class="home-grid" aria-label="Accesos rápidos">
+        <button class="home-card" type="button" data-page-jump="work">
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"/><path d="M9 7V5h6v2"/><path d="M4 12h16"/></svg>
+          </span>
+          <strong>Trabajo</strong>
+          <small>Tareas, herramientas, enfoque e ideas.</small>
+        </button>
+        <button class="home-card" type="button" data-page-jump="break">
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10v4a5 5 0 0 1-10 0V8Z"/><path d="M17 9h1a3 3 0 0 1 0 6h-1"/><path d="M6 20h12"/></svg>
+          </span>
+          <strong>Descanso</strong>
+          <small>Perritos para despejarse tantito.</small>
+        </button>
+        <button class="home-card" type="button" data-page-jump="challenge">
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17h10l2-6H5l2 6Z"/><path d="M7 17v2M17 17v2"/><path d="M8 11V7h8v4"/></svg>
+          </span>
+          <strong>Retos</strong>
+          <small>Bochos, combis y marcador compartido.</small>
+        </button>
+      </section>
+      </section>
 
+      <section class="app-view" data-page-panel="work">
       <section class="composer" aria-label="Nueva tarea">
         <form id="taskForm" class="task-form">
           <label>
@@ -236,8 +281,9 @@
           <div class="lanes" id="lanes"></div>
         </section>
       </section>
+      </section>
 
-      <section class="dog-panel dog-panel--wide" aria-label="Regalito de perritos">
+      <section class="app-view dog-panel dog-panel--wide" data-page-panel="break" aria-label="Regalito de perritos">
         <div class="section-head">
           <h2>Regalito</h2>
         </div>
@@ -253,7 +299,7 @@
         </div>
       </section>
 
-      <section class="road-game-panel" aria-label="Reto de Bochos y Combis">
+      <section class="app-view road-game-panel" data-page-panel="challenge" aria-label="Reto de Bochos y Combis">
         <div class="section-head">
           <h2>Bochos y Combis</h2>
           <button id="refreshRoadGame" class="icon-btn" type="button" title="Actualizar reto" aria-label="Actualizar reto">
