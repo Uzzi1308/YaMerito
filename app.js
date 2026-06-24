@@ -12,7 +12,8 @@ const seed = {
   timer: { minutes: 25, remaining: 25 * 60, running: false, completed: 0, completedDate: getDateKey(), history: {} },
   reports: { dailyShown: "", weeklyShown: "" },
   profile: { name: "", avatar: "", note: "" },
-  roadGame: { code: "" }
+  roadGame: { code: "" },
+  sharedCalendar: { code: "", customActivities: [] }
 };
 
 const storeKey = "atelier-marketing-dashboard-v2";
@@ -22,6 +23,8 @@ const pageKey = "yamerito-active-page";
 const cloudTable = "dashboard_states";
 const roadGamesTable = "road_games";
 const roadSpottingsTable = "road_spottings";
+const sharedCalendarsTable = "shared_calendars";
+const sharedCalendarEventsTable = "shared_calendar_events";
 const supabaseUrl = "https://ljwwbnjgdmczdhckcztf.supabase.co";
 const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxqd3dibmpnZG1jemRoY2tjenRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1NDU3MTEsImV4cCI6MjA5NzEyMTcxMX0.PGz3a1mry1HOJsI1YY1vyoHclJdUfucZR6BNZay6Jqc";
 let state = loadState();
@@ -37,6 +40,10 @@ let loadingCloudState = false;
 let pendingProfileAvatar = null;
 let roadGameData = null;
 let roadSpottings = [];
+let calendarData = null;
+let calendarEvents = [];
+let calendarWeekStart = getStartOfWeek(new Date());
+let draggedActivity = null;
 
 const laneWrap = document.querySelector("#lanes");
 const template = document.querySelector("#taskTemplate");
@@ -99,6 +106,16 @@ const roadOtherTotal = document.querySelector("#roadOtherTotal");
 const roadOtherBochos = document.querySelector("#roadOtherBochos");
 const roadOtherCombis = document.querySelector("#roadOtherCombis");
 const roadHistory = document.querySelector("#roadHistory");
+const calendarStatus = document.querySelector("#calendarStatus");
+const calendarCode = document.querySelector("#calendarCode");
+const joinCalendarCode = document.querySelector("#joinCalendarCode");
+const weekLabel = document.querySelector("#weekLabel");
+const weekCalendarGrid = document.querySelector("#weekCalendarGrid");
+const customActivityForm = document.querySelector("#customActivityForm");
+const customActivityName = document.querySelector("#customActivityName");
+const monthModal = document.querySelector("#monthModal");
+const monthTitle = document.querySelector("#monthTitle");
+const monthCalendarGrid = document.querySelector("#monthCalendarGrid");
 
 const mascotSprites = {
   dog: "./assets/mascots/dog.png",
@@ -133,7 +150,8 @@ function normalizeState(savedState) {
     water: normalizeWater(savedState.water),
     reports: { ...seed.reports, ...(savedState.reports || {}) },
     profile: { ...seed.profile, ...(savedState.profile || {}) },
-    roadGame: { ...seed.roadGame, ...(savedState.roadGame || {}) }
+    roadGame: { ...seed.roadGame, ...(savedState.roadGame || {}) },
+    sharedCalendar: { ...seed.sharedCalendar, ...(savedState.sharedCalendar || {}) }
   };
 }
 
@@ -182,6 +200,7 @@ function render() {
   renderAccountButton();
   renderProfileFields();
   renderRoadGame();
+  renderCalendar();
   saveState();
 }
 
@@ -240,6 +259,7 @@ async function loadCloudState() {
   render();
   if (!data?.state) saveCloudState();
   loadRoadGame();
+  loadSharedCalendar();
   setSyncStatus("Sincronizado");
 }
 
@@ -265,7 +285,10 @@ async function initCloudSync() {
       setSyncStatus("Guardado local");
       roadGameData = null;
       roadSpottings = [];
+      calendarData = null;
+      calendarEvents = [];
       renderRoadGame();
+      renderCalendar();
     }
   });
 }
@@ -551,6 +574,267 @@ async function addRoadSpotting(event) {
   roadGameStatus.textContent = "Avistamiento agregado";
   showMascotMessage("Punto para el reto.");
   loadRoadGame();
+}
+
+function getCalendarCode() {
+  return (state.sharedCalendar?.code || "").toUpperCase();
+}
+
+function renderCalendar() {
+  const code = getCalendarCode();
+  const signedIn = Boolean(currentUser);
+  calendarCode.textContent = code || "----";
+  calendarStatus.textContent = !signedIn
+    ? "Inicia sesión para compartir"
+    : !code
+      ? "Crea un código o únete a uno"
+      : calendarData?.joined_by
+        ? "Calendario conectado"
+        : "Comparte el código";
+  document.querySelector("#createCalendar").disabled = !signedIn;
+  document.querySelector("#joinCalendar").disabled = !signedIn;
+  renderActivityPalette();
+  renderWeekCalendar();
+}
+
+function renderActivityPalette() {
+  document.querySelectorAll("[data-custom-activity]").forEach((item) => item.remove());
+  const form = customActivityForm;
+  (state.sharedCalendar.customActivities || []).forEach((activity) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.draggable = true;
+    button.dataset.activity = activity;
+    button.dataset.kind = "otro";
+    button.dataset.customActivity = "true";
+    button.textContent = activity;
+    button.addEventListener("dragstart", onActivityDragStart);
+    form.before(button);
+  });
+}
+
+function renderWeekCalendar() {
+  const days = getWeekDays(calendarWeekStart);
+  weekLabel.textContent = `${formatShortDate(days[0])} - ${formatShortDate(days[6])}`;
+  weekCalendarGrid.innerHTML = "";
+  days.forEach((day) => {
+    const dateKey = formatDateKey(day);
+    const column = document.createElement("section");
+    column.className = "calendar-day";
+    column.dataset.date = dateKey;
+    column.innerHTML = `
+      <div class="calendar-day__head">
+        <strong>${day.toLocaleDateString("es-MX", { weekday: "long" })}</strong>
+        <span>${day.toLocaleDateString("es-MX", { day: "numeric", month: "short" })}</span>
+      </div>
+      <div class="calendar-events"></div>
+    `;
+    column.addEventListener("dragover", (event) => {
+      event.preventDefault();
+      column.classList.add("is-over");
+    });
+    column.addEventListener("dragleave", () => column.classList.remove("is-over"));
+    column.addEventListener("drop", (event) => onCalendarDrop(event, dateKey, column));
+
+    const list = column.querySelector(".calendar-events");
+    calendarEvents
+      .filter((item) => item.event_date === dateKey)
+      .forEach((item) => list.appendChild(createCalendarEvent(item)));
+    weekCalendarGrid.appendChild(column);
+  });
+}
+
+function createCalendarEvent(event) {
+  const item = document.createElement("article");
+  item.className = "calendar-event";
+  item.innerHTML = `<span>${escapeHtml(event.title)}</span>`;
+  if (event.user_id === currentUser?.id) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.title = "Quitar actividad";
+    button.setAttribute("aria-label", "Quitar actividad");
+    button.textContent = "×";
+    button.addEventListener("click", () => deleteCalendarEvent(event.id));
+    item.appendChild(button);
+  }
+  return item;
+}
+
+function getWeekDays(start) {
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(start);
+    day.setDate(start.getDate() + index);
+    return day;
+  });
+}
+
+function getStartOfWeek(date) {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const day = start.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  start.setDate(start.getDate() + diff);
+  return start;
+}
+
+function formatShortDate(date) {
+  return date.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
+}
+
+function onActivityDragStart(event) {
+  draggedActivity = {
+    title: event.currentTarget.dataset.activity,
+    kind: event.currentTarget.dataset.kind
+  };
+}
+
+async function onCalendarDrop(event, dateKey, column) {
+  event.preventDefault();
+  column.classList.remove("is-over");
+  if (!draggedActivity) return;
+  await addCalendarEvent(draggedActivity, dateKey);
+  draggedActivity = null;
+}
+
+async function createSharedCalendar() {
+  if (!canUseCloud()) {
+    calendarStatus.textContent = "Inicia sesión para crear calendario";
+    return;
+  }
+  const code = createRoadCode();
+  const { data, error } = await supabaseClient
+    .from(sharedCalendarsTable)
+    .insert({ code, created_by: currentUser.id, created_name: getPlayerName() })
+    .select()
+    .single();
+  if (error) {
+    calendarStatus.textContent = "No se pudo crear";
+    return;
+  }
+  state.sharedCalendar.code = code;
+  calendarData = data;
+  calendarEvents = [];
+  render();
+  saveCloudState();
+}
+
+async function joinSharedCalendar() {
+  if (!canUseCloud()) {
+    calendarStatus.textContent = "Inicia sesión para unirte";
+    return;
+  }
+  const code = joinCalendarCode.value.trim().toUpperCase();
+  if (!code) return;
+  const { data: calendar, error: readError } = await supabaseClient
+    .from(sharedCalendarsTable)
+    .select()
+    .eq("code", code)
+    .maybeSingle();
+  if (readError || !calendar) {
+    calendarStatus.textContent = "Código no encontrado";
+    return;
+  }
+  const update = calendar.created_by === currentUser.id
+    ? { created_name: getPlayerName() }
+    : { joined_by: currentUser.id, joined_name: getPlayerName() };
+  const { data, error } = await supabaseClient
+    .from(sharedCalendarsTable)
+    .update(update)
+    .eq("code", code)
+    .select()
+    .single();
+  if (error) {
+    calendarStatus.textContent = "No se pudo unir";
+    return;
+  }
+  state.sharedCalendar.code = code;
+  calendarData = data;
+  joinCalendarCode.value = "";
+  render();
+  saveCloudState();
+  loadSharedCalendar();
+}
+
+async function loadSharedCalendar() {
+  const code = getCalendarCode();
+  if (!supabaseClient || !currentUser || !code) {
+    renderCalendar();
+    return;
+  }
+  const { data: calendar, error: calendarError } = await supabaseClient
+    .from(sharedCalendarsTable)
+    .select()
+    .eq("code", code)
+    .maybeSingle();
+  if (calendarError || !calendar) {
+    calendarStatus.textContent = "No se pudo cargar";
+    return;
+  }
+  const monthStart = new Date(calendarWeekStart);
+  monthStart.setDate(1);
+  const monthEnd = new Date(monthStart);
+  monthEnd.setMonth(monthStart.getMonth() + 2, 0);
+  const { data: events, error: eventError } = await supabaseClient
+    .from(sharedCalendarEventsTable)
+    .select()
+    .eq("calendar_code", code)
+    .gte("event_date", formatDateKey(monthStart))
+    .lte("event_date", formatDateKey(monthEnd))
+    .order("event_date", { ascending: true });
+  if (eventError) {
+    calendarStatus.textContent = "No se pudieron cargar actividades";
+    return;
+  }
+  calendarData = calendar;
+  calendarEvents = events || [];
+  renderCalendar();
+}
+
+async function addCalendarEvent(activity, dateKey) {
+  const code = getCalendarCode();
+  if (!canUseCloud() || !code) {
+    calendarStatus.textContent = "Primero crea o únete a un calendario";
+    return;
+  }
+  const { error } = await supabaseClient
+    .from(sharedCalendarEventsTable)
+    .insert({
+      calendar_code: code,
+      user_id: currentUser.id,
+      title: activity.title,
+      kind: activity.kind,
+      event_date: dateKey
+    });
+  if (error) {
+    calendarStatus.textContent = "No se pudo agregar";
+    return;
+  }
+  calendarStatus.textContent = "Actividad agregada";
+  loadSharedCalendar();
+}
+
+async function deleteCalendarEvent(id) {
+  if (!supabaseClient || !currentUser) return;
+  await supabaseClient.from(sharedCalendarEventsTable).delete().eq("id", id);
+  loadSharedCalendar();
+}
+
+function renderMonthCalendar() {
+  const monthDate = new Date(calendarWeekStart);
+  monthTitle.textContent = monthDate.toLocaleDateString("es-MX", { month: "long", year: "numeric" });
+  const first = new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+  const start = getStartOfWeek(first);
+  monthCalendarGrid.innerHTML = "";
+  Array.from({ length: 42 }, (_, index) => {
+    const day = new Date(start);
+    day.setDate(start.getDate() + index);
+    const dateKey = formatDateKey(day);
+    const cell = document.createElement("div");
+    cell.className = `month-cell${day.getMonth() !== monthDate.getMonth() ? " is-muted" : ""}`;
+    const dayEvents = calendarEvents.filter((item) => item.event_date === dateKey);
+    cell.innerHTML = `<span>${day.getDate()}</span>${dayEvents.slice(0, 3).map((item) => `<b>${escapeHtml(item.title)}</b>`).join("")}`;
+    monthCalendarGrid.appendChild(cell);
+  });
 }
 
 function visibleTasks() {
@@ -953,8 +1237,49 @@ document.querySelector("#joinRoadGame").addEventListener("click", joinRoadGame);
 document.querySelector("#refreshRoadGame").addEventListener("click", loadRoadGame);
 roadSpotForm.addEventListener("submit", addRoadSpotting);
 
+document.querySelector("#createCalendar").addEventListener("click", createSharedCalendar);
+document.querySelector("#joinCalendar").addEventListener("click", joinSharedCalendar);
+document.querySelector("#previousWeek").addEventListener("click", () => {
+  calendarWeekStart.setDate(calendarWeekStart.getDate() - 7);
+  loadSharedCalendar();
+});
+document.querySelector("#nextWeek").addEventListener("click", () => {
+  calendarWeekStart.setDate(calendarWeekStart.getDate() + 7);
+  loadSharedCalendar();
+});
+document.querySelector("#openMonthCalendar").addEventListener("click", () => {
+  renderMonthCalendar();
+  monthModal.classList.add("is-open");
+  monthModal.setAttribute("aria-hidden", "false");
+});
+document.querySelector("#closeMonthCalendar").addEventListener("click", () => {
+  monthModal.classList.remove("is-open");
+  monthModal.setAttribute("aria-hidden", "true");
+});
+monthModal.addEventListener("click", (event) => {
+  if (event.target === monthModal) {
+    monthModal.classList.remove("is-open");
+    monthModal.setAttribute("aria-hidden", "true");
+  }
+});
+document.querySelectorAll("[data-activity]").forEach((button) => {
+  button.addEventListener("dragstart", onActivityDragStart);
+});
+customActivityForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const value = customActivityName.value.trim();
+  if (!value) return;
+  state.sharedCalendar.customActivities = [...new Set([...(state.sharedCalendar.customActivities || []), value])];
+  customActivityName.value = "";
+  render();
+});
+
 joinRoadCode.addEventListener("input", () => {
   joinRoadCode.value = joinRoadCode.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+});
+
+joinCalendarCode.addEventListener("input", () => {
+  joinCalendarCode.value = joinCalendarCode.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
 });
 
 function resizeProfileImage(file) {

@@ -45,6 +45,10 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17h10l2-6H5l2 6Z"/><path d="M7 17v2M17 17v2"/><path d="M8 11V7h8v4"/></svg>
           <span>Retos</span>
         </button>
+        <button type="button" data-page="calendar" aria-label="Ver calendario">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v16H4z"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+          <span>Calendario</span>
+        </button>
       </nav>
 
       <section class="app-view is-active" data-page-panel="dashboard">
@@ -89,6 +93,13 @@
           </span>
           <strong>Retos</strong>
           <small>Bochos, combis y marcador compartido.</small>
+        </button>
+        <button class="home-card" type="button" data-page-jump="calendar">
+          <span>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v16H4z"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+          </span>
+          <strong>Calendario</strong>
+          <small>Planes compartidos de la semana.</small>
         </button>
       </section>
       </section>
@@ -374,6 +385,55 @@
         </div>
       </section>
 
+      <section class="app-view shared-calendar-panel" data-page-panel="calendar" aria-label="Calendario compartido">
+        <div class="section-head">
+          <h2>Calendario juntos</h2>
+          <button id="openMonthCalendar" class="primary" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v16H4z"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+            Mes
+          </button>
+        </div>
+
+        <div class="calendar-connect">
+          <div>
+            <p id="calendarStatus" class="eyebrow">Inicia sesión para compartir</p>
+            <strong id="calendarCode">----</strong>
+          </div>
+          <button id="createCalendar" class="primary" type="button">Crear código</button>
+          <label>
+            <span>Unirme</span>
+            <input id="joinCalendarCode" type="text" maxlength="8" placeholder="ABC123" />
+          </label>
+          <button id="joinCalendar" class="ghost" type="button">Unir</button>
+        </div>
+
+        <div class="activity-palette" aria-label="Actividades para arrastrar">
+          <button draggable="true" type="button" data-activity="Leer" data-kind="leer">Leer</button>
+          <button draggable="true" type="button" data-activity="Inglés" data-kind="ingles">Inglés</button>
+          <button draggable="true" type="button" data-activity="Curso" data-kind="curso">Curso</button>
+          <button draggable="true" type="button" data-activity="Jugar" data-kind="jugar">Jugar</button>
+          <button draggable="true" type="button" data-activity="Ejercicio" data-kind="ejercicio">Ejercicio</button>
+          <button draggable="true" type="button" data-activity="Película" data-kind="pelicula">Película</button>
+          <form id="customActivityForm" class="custom-activity-form">
+            <input id="customActivityName" type="text" placeholder="Otra actividad" />
+            <button class="ghost" type="submit">Agregar</button>
+          </form>
+        </div>
+
+        <div class="week-calendar">
+          <div class="week-calendar__head">
+            <button id="previousWeek" class="icon-btn" type="button" title="Semana anterior" aria-label="Semana anterior">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18 9 12l6-6"/></svg>
+            </button>
+            <strong id="weekLabel">Semana actual</strong>
+            <button id="nextWeek" class="icon-btn" type="button" title="Semana siguiente" aria-label="Semana siguiente">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+          <div id="weekCalendarGrid" class="week-calendar__grid"></div>
+        </div>
+      </section>
+
     </main>
 
     <template id="taskTemplate">
@@ -495,6 +555,21 @@
             </div>
           </form>
         </div>
+      </div>
+    </section>
+
+    <section id="monthModal" class="auth-modal" aria-hidden="true">
+      <div class="auth-card month-card" role="dialog" aria-modal="true" aria-labelledby="monthTitle">
+        <button id="closeMonthCalendar" class="icon-btn auth-close" type="button" title="Cerrar" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+        <div class="auth-card__head">
+          <div>
+            <p class="eyebrow">Calendario</p>
+            <h2 id="monthTitle">Mes actual</h2>
+          </div>
+        </div>
+        <div id="monthCalendarGrid" class="month-calendar-grid"></div>
       </div>
     </section>
 
